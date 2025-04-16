@@ -201,7 +201,7 @@
             
             // Redirect to Kick OAuth page
             setTimeout(() => {
-                const scopes = encodeURIComponent('channel:read:public channel:read:private');
+                const scopes = encodeURIComponent('channel:read:public');  // Simplified scopes
                 
                 // Check if we're in development environment
                 const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -244,7 +244,29 @@
                             };
                             
                             console.log('Using fallback redirect URI:', staticConfig.redirectUri);
-                            window.location.href = `https://kick.com/oauth/authorize?client_id=${staticConfig.clientId}&redirect_uri=${encodeURIComponent(staticConfig.redirectUri)}&response_type=code&scope=${scopes}&state=${state}`;
+                            
+                            // Show debug info for troubleshooting
+                            debugInfo.classList.remove('hidden');
+                            debugContent.innerHTML += `
+                                <p><strong>OAuth URL:</strong> https://kick.com/oauth/authorize?client_id=${staticConfig.clientId}&redirect_uri=${encodeURIComponent(staticConfig.redirectUri)}&response_type=code&scope=${scopes}&state=${state}</p>
+                                <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+                            `;
+                            
+                            // Direct link option for troubleshooting
+                            statusMessage.innerHTML = `
+                                <div>
+                                    Using fallback configuration. Try these options:
+                                    <ol>
+                                        <li><a href="javascript:void(0)" onclick="window.location.href='https://kick.com/oauth/authorize?client_id=${staticConfig.clientId}&redirect_uri=${encodeURIComponent(staticConfig.redirectUri)}&response_type=code&scope=${scopes}&state=${state}'">Direct link to Kick authorization</a></li>
+                                        <li><a href="https://kick.com/oauth/authorize?client_id=${staticConfig.clientId}&redirect_uri=${encodeURIComponent(staticConfig.redirectUri)}&response_type=code&scope=channel:read:public&state=${state}" target="_blank">Open in new tab (simplified scopes)</a></li>
+                                        <li>Make sure you're <a href="https://kick.com/login" target="_blank">logged into Kick</a> first</li>
+                                    </ol>
+                                </div>
+                            `;
+                            connectButton.disabled = false;
+                            
+                            // Don't automatically redirect - let user choose
+                            // window.location.href = `https://kick.com/oauth/authorize?client_id=${staticConfig.clientId}&redirect_uri=${encodeURIComponent(staticConfig.redirectUri)}&response_type=code&scope=${scopes}&state=${state}`;
                         });
                 }
             }, 1000);

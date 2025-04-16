@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Kick OAuth</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 20px; background-color: #f9f9f9; }
+        .button { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; text-align: center; 
+                 text-decoration: none; display: inline-block; font-size: 16px; margin: 10px 2px; cursor: pointer; border-radius: 5px; }
+        pre { background-color: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Verify Kick OAuth Configuration</h1>
+    
+    <div class="card">
+        <h2>Test Direct Authorization</h2>
+        <p>This page helps verify your Kick OAuth configuration. Click the button below to test the direct authorization flow with minimal parameters.</p>
+        
+        <button class="button" id="testAuthButton">Test Kick Authorization</button>
+        <div id="status"></div>
+    </div>
+    
+    <div class="card">
+        <h2>OAuth Configuration</h2>
+        <pre>
+Client ID: 01JRZE2B4TMTR46H93MBC012A4
+Redirect URI: https://ratedstealth.github.io
+Callback Path: /oauth/callback
+        </pre>
+        
+        <h3>Important Verification Steps:</h3>
+        <ol>
+            <li>Make sure you're <a href="https://kick.com/login" target="_blank">logged into Kick</a> in this browser</li>
+            <li>Verify that the above Redirect URI <strong>exactly matches</strong> what's in your Kick Developer Portal</li>
+            <li>Verify that your application has the <strong>channel:read:public</strong> scope enabled</li>
+            <li>Check that your client ID is correct</li>
+        </ol>
+    </div>
+    
+    <div class="card">
+        <h2>Troubleshooting</h2>
+        <p>If authorization always redirects to Kick homepage:</p>
+        <ul>
+            <li>The most common issue is a <strong>redirect URI mismatch</strong>. Even a trailing slash can break it.</li>
+            <li>Make sure you've created an API application in Kick Developer Portal</li>
+            <li>Verify that your session with Kick is active (try logging in again)</li>
+            <li>Check that your application is approved and active in Kick</li>
+        </ul>
+    </div>
+    
+    <script>
+        document.getElementById('testAuthButton').addEventListener('click', function() {
+            const status = document.getElementById('status');
+            status.innerHTML = '<p>Initiating OAuth test...</p>';
+            
+            // Generate a random state value
+            const state = Math.random().toString(36).substring(2, 15);
+            
+            // Simple parameters for testing
+            const clientId = '01JRZE2B4TMTR46H93MBC012A4';
+            const redirectUri = 'https://ratedstealth.github.io/oauth/callback';
+            const scope = 'channel:read:public';
+            
+            // Construct the URL
+            const url = `https://kick.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&state=${state}`;
+            
+            status.innerHTML = `
+                <p>Redirecting to Kick in 3 seconds...</p>
+                <p>Authorization URL: <a href="${url}" target="_blank">${url}</a></p>
+                <p class="success">Click the link above if not automatically redirected.</p>
+            `;
+            
+            // Store state for verification
+            localStorage.setItem('oauth_test_state', state);
+            localStorage.setItem('oauth_test_time', new Date().toISOString());
+            
+            // Redirect with a small delay to allow reading the URL
+            setTimeout(function() {
+                window.location.href = url;
+            }, 3000);
+        });
+    </script>
+</body>
+</html> 

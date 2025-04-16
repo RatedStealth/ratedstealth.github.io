@@ -3,28 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    <script>
-        // Get the query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
-        
-        // Determine the base URL for redirect
-        // For GitHub Pages, we want to go to the root of the repository
-        const baseUrl = window.location.origin;
-        
-        // Redirect to the main page with the parameters
-        if (code && state) {
-            window.location.href = `${baseUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
-        } else {
-            // If no code or state, still redirect to main page
-            window.location.href = baseUrl;
-        }
-    </script>
+    <title>OAuth Callback</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .debug { background-color: #f5f5f5; padding: 15px; border: 1px solid #ddd; margin-top: 20px; font-family: monospace; }
+        h1 { color: #00AA00; }
+        .button { background-color: #53fc18; color: black; border: none; padding: 10px 20px; font-size: 16px; 
+                 border-radius: 5px; cursor: pointer; margin: 15px 0; text-decoration: none; display: inline-block; }
+    </style>
 </head>
 <body>
-    <h1>Redirecting...</h1>
-    <p>Please wait, you are being redirected to the main page.</p>
+    <h1>OAuth Callback Processing</h1>
+    
+    <div id="status">Analyzing callback parameters...</div>
+    
+    <div class="debug">
+        <h3>Debug Information:</h3>
+        <div id="debug-content"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusDiv = document.getElementById('status');
+            const debugContent = document.getElementById('debug-content');
+            
+            // Get the query parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+            
+            // Log all parameters for debugging
+            debugContent.innerHTML = `
+                <p><strong>Full URL:</strong> ${window.location.href}</p>
+                <p><strong>Search params:</strong> ${window.location.search}</p>
+                <p><strong>Code:</strong> ${code ? `${code.substring(0, 10)}...` : 'None'}</p>
+                <p><strong>State:</strong> ${state || 'None'}</p>
+                <p><strong>Error:</strong> ${error || 'None'}</p>
+                <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+                <p><strong>Location origin:</strong> ${window.location.origin}</p>
+                <p><strong>Location pathname:</strong> ${window.location.pathname}</p>
+            `;
+            
+            // Determine the base URL for redirect
+            const baseUrl = window.location.origin;
+            
+            // Update status based on parameters
+            if (error) {
+                statusDiv.innerHTML = `
+                    <h2>Error Received</h2>
+                    <p>The authorization server returned an error: ${error}</p>
+                    <a href="${baseUrl}" class="button">Return to Main Page</a>
+                `;
+            } else if (code && state) {
+                statusDiv.innerHTML = `
+                    <h2>Authorization Code Received</h2>
+                    <p>Redirecting to main page with authorization code...</p>
+                    <a href="${baseUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}" class="button">Continue to Main Page</a>
+                `;
+                
+                // Automatic redirect after showing debug info
+                setTimeout(function() {
+                    window.location.href = `${baseUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+                }, 5000); // 5 second delay to allow reading debug info
+            } else {
+                statusDiv.innerHTML = `
+                    <h2>No Authorization Parameters</h2>
+                    <p>No code or state parameters were found in the callback URL.</p>
+                    <a href="${baseUrl}" class="button">Return to Main Page</a>
+                `;
+            }
+        });
+    </script>
 </body>
 </html> 
