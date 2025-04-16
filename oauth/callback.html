@@ -10,12 +10,16 @@
         const code = urlParams.get('code');
         const state = urlParams.get('state');
         
+        // Determine the base URL for redirect
+        // For GitHub Pages, we want to go to the root of the repository
+        const baseUrl = window.location.origin;
+        
         // Redirect to the main page with the parameters
         if (code && state) {
-            window.location.href = "../?code=" + encodeURIComponent(code) + "&state=" + encodeURIComponent(state);
+            window.location.href = `${baseUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
         } else {
             // If no code or state, still redirect to main page
-            window.location.href = "../";
+            window.location.href = baseUrl;
         }
     </script>
 </head>

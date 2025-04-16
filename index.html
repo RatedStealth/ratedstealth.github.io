@@ -233,13 +233,18 @@
                             window.location.href = `https://kick.com/oauth/authorize?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.redirectUri)}&response_type=code&scope=${scopes}&state=${state}`;
                         })
                         .catch(error => {
-                            statusMessage.innerHTML = `
-                                <div class="error">
-                                    <p>Error starting OAuth process: ${error.message}</p>
-                                    <p>Please contact the bot administrator.</p>
-                                </div>
-                            `;
-                            connectButton.disabled = false;
+                            // Fallback for GitHub Pages
+                            console.error('Error fetching OAuth config:', error);
+                            statusMessage.innerHTML = 'Using fallback OAuth configuration...';
+                            
+                            // Hardcoded values for GitHub Pages
+                            const staticConfig = {
+                                clientId: '01JRZE2B4TMTR46H93MBC012A4',
+                                redirectUri: 'https://ratedstealth.github.io'
+                            };
+                            
+                            console.log('Using fallback redirect URI:', staticConfig.redirectUri);
+                            window.location.href = `https://kick.com/oauth/authorize?client_id=${staticConfig.clientId}&redirect_uri=${encodeURIComponent(staticConfig.redirectUri)}&response_type=code&scope=${scopes}&state=${state}`;
                         });
                 }
             }, 1000);
