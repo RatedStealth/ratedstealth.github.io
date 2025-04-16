@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick API Status & Workarounds</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #00AA00; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 20px; background-color: #f9f9f9; }
+        .warning { background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 15px 0; }
+        .success { background-color: #d4edda; padding: 15px; border-left: 4px solid #28a745; margin: 15px 0; }
+        .error { background-color: #f8d7da; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+        code { background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; 
+                 text-align: center; font-size: 16px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>Kick API Status & Workarounds</h1>
+    
+    <div class="container">
+        <div class="error">
+            <h3>Kick API Restrictions Detected</h3>
+            <p>We've confirmed that Kick's API is returning <strong>403 Forbidden</strong> responses when accessed from browsers. This indicates:</p>
+            <ul>
+                <li>Kick likely restricts API access to their platform</li>
+                <li>OAuth authentication may be limited to partner accounts</li>
+                <li>Direct API calls are blocked via CORS and other restrictions</li>
+            </ul>
+        </div>
+        
+        <h2>Server-Side Solution Already Implemented</h2>
+        <div class="success">
+            <p>The good news is that your bot's server-side component is already working!</p>
+            <p>The <code>/checkstatus</code> and <code>/public-register</code> commands use special techniques to access the Kick API that aren't available in browsers:</p>
+            <ul>
+                <li>User-Agent rotation to avoid detection</li>
+                <li>Server-side requests that bypass CORS restrictions</li>
+                <li>Multiple fallback methods if one approach fails</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>How to Use the Bot Without OAuth</h2>
+        <p>Since Kick isn't allowing OAuth from non-partner accounts, here's how to use the bot:</p>
+        
+        <h3>For Server Administrators:</h3>
+        <ol>
+            <li>Use the <code>/public-register</code> command to add streamers without OAuth:
+                <pre>/public-register user:@username kick_username:theirKickName</pre>
+            </li>
+            <li>The bot will verify the Kick account exists and start tracking it</li>
+            <li>The regular status checks will still work to assign/remove roles</li>
+        </ol>
+        
+        <h3>For Streamers:</h3>
+        <ol>
+            <li>Provide your Kick username to a server administrator</li>
+            <li>They'll register you using the <code>/public-register</code> command</li>
+            <li>The bot will automatically check if you're live and assign roles</li>
+        </ol>
+        
+        <div class="warning">
+            <p><strong>Note:</strong> While this approach doesn't use OAuth, it still provides the core functionality:</p>
+            <ul>
+                <li>✅ Automatic live status detection</li>
+                <li>✅ Discord role management</li>
+                <li>✅ Regular status checks</li>
+                <li>❌ Channel-specific authentication (not available without OAuth)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Technical Details</h2>
+        <p>For the curious, here's why the browser can't access the API but the server can:</p>
+        <ul>
+            <li><strong>CORS (Cross-Origin Resource Sharing):</strong> Kick blocks requests from domains they don't authorize</li>
+            <li><strong>IP/User-Agent filtering:</strong> Kick may block requests that don't come from recognized browsers/apps</li>
+            <li><strong>OAuth restrictions:</strong> Kick may limit OAuth to verified partners</li>
+        </ul>
+        
+        <p>The server bypasses these issues by:</p>
+        <ul>
+            <li>Making direct HTTP requests that aren't subject to CORS</li>
+            <li>Using browser-like User-Agent headers to appear as legitimate traffic</li>
+            <li>Implementing multiple fallback methods when the primary API fails</li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <h2>Getting Started</h2>
+        <p>To get started with the non-OAuth approach:</p>
+        <ol>
+            <li>Have a server administrator run <code>/public-register</code> with your information</li>
+            <li>Use <code>/checkstatus your_kick_username</code> to verify it's working</li>
+            <li>The bot will automatically check your status periodically</li>
+        </ol>
+        <p>
+            <a href="index.html" style="display: inline-block; padding: 10px 15px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">Return to Main Page</a>
+        </p>
+    </div>
+</body>
+</html> 

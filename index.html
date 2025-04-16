@@ -154,6 +154,13 @@
             // Normal visit to the page - show login button
             container.innerHTML = `
                 <h2>Connect Your Kick Account</h2>
+                
+                <div class="info" style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin-bottom: 20px;">
+                    <h3 style="color: #dc3545;">Important Notice: API Restrictions</h3>
+                    <p>We've detected that Kick's API is restricting access to OAuth for non-partner accounts.</p>
+                    <p><a href="api-status.html" style="font-weight: bold;">Click here</a> to learn about our alternative solution that doesn't require OAuth.</p>
+                </div>
+                
                 <p>Link your Kick account with the KudosRP Discord bot to automatically manage your streamer role.</p>
                 
                 <button id="connect-button" onclick="redirectToKickAuth()">Connect with Kick</button>
@@ -176,19 +183,15 @@
                         <li>Make sure you're logged into Kick in the same browser</li>
                         <li>Try using an incognito/private window and log into Kick first</li>
                         <li>Kick may restrict API access to partner accounts</li>
-                        <li><a href="check-app.html">Run our diagnostic tool</a> to troubleshoot OAuth issues</li>
-                        <li><a href="manual-oauth.html">Try our manual OAuth process</a> as an alternative</li>
+                        <li><a href="api-status.html">Use our alternative solution</a> that doesn't require OAuth</li>
                     </ol>
                 </div>
                 
                 <div class="success">
                     <h3>For Server Administrators</h3>
-                    <p>Please check the following resources if users are having trouble with OAuth:</p>
-                    <ul>
-                        <li><a href="verify-oauth.html">OAuth Verification Tool</a> - Test different OAuth configurations</li>
-                        <li><a href="check-app.html">Application Diagnostic</a> - Verify your Kick Developer application</li>
-                        <li><a href="manual-oauth.html">Manual OAuth Process</a> - Alternative authentication method</li>
-                    </ul>
+                    <p>Please use the <code>/public-register</code> command to register streamers without OAuth:</p>
+                    <pre>/public-register user:@username kick_username:theirKickName</pre>
+                    <p>View the <a href="api-status.html">alternative solution guide</a> for more information.</p>
                 </div>
             `;
         });
