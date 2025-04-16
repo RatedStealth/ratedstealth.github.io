@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual OAuth Code Entry</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #00AA00; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 20px; background-color: #f9f9f9; }
+        .success { color: green; background-color: #e8f5e9; padding: 10px; border-left: 4px solid green; margin: 15px 0; }
+        .error { color: red; background-color: #ffebee; padding: 10px; border-left: 4px solid red; margin: 15px 0; }
+        .info { background-color: #e3f2fd; padding: 10px; border-left: 4px solid #2196F3; margin: 15px 0; }
+        textarea, input { width: 100%; padding: 8px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #45a049; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Manual OAuth Code Entry</h1>
+    
+    <div class="container">
+        <div class="info">
+            <h3>Alternative OAuth Solution</h3>
+            <p>If the automatic OAuth flow isn't working properly with Kick's API, you can use this manual process instead.</p>
+        </div>
+        
+        <h2>Step 1: Get Authorization Code</h2>
+        <p>Go to <a href="https://kick.com/" target="_blank">Kick</a> and login to your account.</p>
+        <p>Then open this URL in a new tab:</p>
+        <pre>https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https://ratedstealth.github.io&response_type=code&scope=channel:read:public&state=manual</pre>
+        <button onclick="window.open('https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https://ratedstealth.github.io&response_type=code&scope=channel:read:public&state=manual', '_blank')">Open Auth URL</button>
+        
+        <h2>Step 2: Copy Authorization Code</h2>
+        <p>After authorizing, you might be redirected to a GitHub page with a URL containing a "code" parameter.</p>
+        <p>If it worked, you'll see a URL like: <code>https://ratedstealth.github.io/?code=AbCdEf123456&state=manual</code></p>
+        <p>Copy the entire "code" value (the part after "code=" and before "&state=").</p>
+        
+        <h2>Step 3: Enter Authorization Details</h2>
+        <div>
+            <label for="authCode">Authorization Code:</label>
+            <input type="text" id="authCode" placeholder="Paste the authorization code here">
+        </div>
+        <div>
+            <label for="discordId">Discord User ID:</label>
+            <input type="text" id="discordId" placeholder="Enter the Discord user ID">
+        </div>
+        <div>
+            <label for="kickUsername">Kick Username:</label>
+            <input type="text" id="kickUsername" placeholder="Enter the Kick username">
+        </div>
+        
+        <button id="saveDataButton">Save Authorization Data</button>
+        <div id="result"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Instructions for Server Admin</h2>
+        <p>Once you have the authorization code:</p>
+        <ol>
+            <li>Download this data as a JSON file</li>
+            <li>Run the <code>/manual-oauth</code> command in your Discord server</li>
+            <li>Follow the instructions to apply the manual authorization</li>
+        </ol>
+        <button id="downloadJsonButton">Download Authorization Data</button>
+    </div>
+    
+    <script>
+        document.getElementById('saveDataButton').addEventListener('click', function() {
+            const authCode = document.getElementById('authCode').value.trim();
+            const discordId = document.getElementById('discordId').value.trim();
+            const kickUsername = document.getElementById('kickUsername').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!authCode) {
+                resultDiv.innerHTML = '<div class="error">Authorization code is required!</div>';
+                return;
+            }
+            
+            // Save to localStorage for persistence
+            localStorage.setItem('kick_manual_auth_code', authCode);
+            localStorage.setItem('kick_manual_discord_id', discordId);
+            localStorage.setItem('kick_manual_kick_username', kickUsername);
+            localStorage.setItem('kick_manual_timestamp', new Date().toISOString());
+            
+            resultDiv.innerHTML = '<div class="success">Authorization data saved successfully!</div>';
+        });
+        
+        document.getElementById('downloadJsonButton').addEventListener('click', function() {
+            const authCode = localStorage.getItem('kick_manual_auth_code') || document.getElementById('authCode').value.trim();
+            const discordId = localStorage.getItem('kick_manual_discord_id') || document.getElementById('discordId').value.trim();
+            const kickUsername = localStorage.getItem('kick_manual_kick_username') || document.getElementById('kickUsername').value.trim();
+            const timestamp = localStorage.getItem('kick_manual_timestamp') || new Date().toISOString();
+            
+            if (!authCode) {
+                alert('Please enter and save the authorization code first!');
+                return;
+            }
+            
+            const data = {
+                auth_code: authCode,
+                discord_id: discordId,
+                kick_username: kickUsername,
+                timestamp: timestamp,
+                client_id: '01JRZE2B4TMTR46H93MBC012A4',
+                redirect_uri: 'https://ratedstealth.github.io'
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'kick_auth_data.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        });
+        
+        // Load saved data if available
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check for code in URL parameters first
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeFromUrl = urlParams.get('code');
+            
+            // Then load from localStorage if available
+            const authCode = codeFromUrl || localStorage.getItem('kick_manual_auth_code');
+            const discordId = localStorage.getItem('kick_manual_discord_id');
+            const kickUsername = localStorage.getItem('kick_manual_kick_username');
+            
+            if (authCode) document.getElementById('authCode').value = authCode;
+            if (discordId) document.getElementById('discordId').value = discordId;
+            if (kickUsername) document.getElementById('kickUsername').value = kickUsername;
+            
+            // If code is from URL, save it automatically
+            if (codeFromUrl) {
+                localStorage.setItem('kick_manual_auth_code', codeFromUrl);
+                
+                // Show success message
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '<div class="success">Authorization code loaded from URL and saved.</div>';
+            }
+        });
+    </script>
+</body>
+</html> 

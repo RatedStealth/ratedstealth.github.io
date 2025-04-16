@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick Application Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #00AA00; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 20px; background-color: #f9f9f9; }
+        .step { margin-bottom: 20px; padding: 15px; background-color: #f5f5f5; border-left: 4px solid #333; }
+        .error { color: #d00; }
+        .success { color: #0a0; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .result { margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Kick Application Diagnostic</h1>
+    
+    <div class="container">
+        <h2>Most Common OAuth Issues</h2>
+        <p>If the Kick OAuth flow is redirecting to the home page, this likely indicates:</p>
+        <ol>
+            <li><span class="error">Your Kick application doesn't exist or is deactivated</span></li>
+            <li><span class="error">The Redirect URI in your Kick Developer Portal doesn't match what you're sending</span></li>
+            <li><span class="error">The requested scopes are not enabled for your application</span></li>
+            <li><span class="error">Your Client ID is incorrect</span></li>
+        </ol>
+    </div>
+    
+    <div class="container">
+        <h2>Step 1: Check if your application is registered correctly</h2>
+        <div class="step">
+            <p>Login to <a href="https://kick.com/" target="_blank">Kick</a> and go to the Developer Portal</p>
+            <p>Verify the following information for your application:</p>
+            <pre>
+Application Name: KudosRP Kick Bot (or your custom name)
+Client ID: 01JRZE2B4TMTR46H93MBC012A4
+Status: Approved and Active
+Redirect URI: Exactly one of:
+  - https://ratedstealth.github.io
+  - https://ratedstealth.github.io/oauth/callback
+  - https://ratedstealth.github.io/
+
+Scopes: channel:read:public (must be enabled)
+            </pre>
+        </div>
+        
+        <h2>Step 2: Try a direct authorization test</h2>
+        <div class="step">
+            <p>Click the button below to open the Kick authorization page in a new tab:</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button id="testAuthButton">Test with Client ID 1</button>
+                <button id="testAltAuthButton">Test with Client ID 2</button>
+                <button id="testCustomAuthButton">Test with Custom Configuration</button>
+            </div>
+            
+            <div id="customConfigForm" style="display: none; margin-top: 15px; padding: 15px; border: 1px dashed #ccc;">
+                <h3>Custom OAuth Configuration</h3>
+                <div style="margin-bottom: 10px;">
+                    <label>Client ID:</label>
+                    <input type="text" id="customClientId" value="01JRZE2B4TMTR46H93MBC012A4" style="width: 100%; padding: 5px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label>Redirect URI:</label>
+                    <input type="text" id="customRedirectUri" value="https://ratedstealth.github.io" style="width: 100%; padding: 5px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label>Scope:</label>
+                    <input type="text" id="customScope" value="channel:read:public" style="width: 100%; padding: 5px;">
+                </div>
+                <button id="applyCustomConfigButton">Apply and Test</button>
+            </div>
+
+            <p>If you're redirected to the Kick homepage, your application is likely not properly configured.</p>
+        </div>
+        
+        <h2>Step 3: Common OAuth configuration issues</h2>
+        <div class="step">
+            <p>Based on experience with Kick's OAuth implementation:</p>
+            <ul>
+                <li class="error">Kick might be limiting OAuth access to Partner accounts only</li>
+                <li class="error">Your application might need to be reviewed by Kick staff</li>
+                <li class="error">The redirect URI must include the full protocol (https://)</li>
+                <li class="error">Special characters in the URI might need proper handling</li>
+                <li class="error">Check if Kick has any IP restrictions on API access</li>
+            </ul>
+            <p><strong>Contact Kick Support:</strong> If all else fails, contact Kick support to enable API access for your account.</p>
+        </div>
+        
+        <h2>Step 4: Verify OAuth response handling</h2>
+        <div class="step">
+            <p>Test if our callback page is working correctly:</p>
+            <button id="testCallbackButton">Test Callback URL</button>
+            <div id="callbackResult"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('testAuthButton').addEventListener('click', function() {
+            // Use minimal parameters with first client ID
+            const url = "https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https%3A%2F%2Fratedstealth.github.io&response_type=code&scope=channel%3Aread%3Apublic&state=direct_test";
+            window.open(url, '_blank');
+        });
+        
+        document.getElementById('testAltAuthButton').addEventListener('click', function() {
+            // Try an alternate formatting of the URL
+            const url = "https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https://ratedstealth.github.io&response_type=code&scope=channel:read:public&state=alt_test";
+            window.open(url, '_blank');
+        });
+        
+        document.getElementById('testCustomAuthButton').addEventListener('click', function() {
+            const form = document.getElementById('customConfigForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        document.getElementById('applyCustomConfigButton').addEventListener('click', function() {
+            const clientId = document.getElementById('customClientId').value.trim();
+            const redirectUri = document.getElementById('customRedirectUri').value.trim();
+            const scope = document.getElementById('customScope').value.trim();
+            
+            if (!clientId || !redirectUri) {
+                alert('Client ID and Redirect URI are required');
+                return;
+            }
+            
+            const url = `https://kick.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=custom_test`;
+            window.open(url, '_blank');
+        });
+        
+        document.getElementById('testCallbackButton').addEventListener('click', function() {
+            const callbackResult = document.getElementById('callbackResult');
+            callbackResult.innerHTML = '<p>Testing callback handling...</p>';
+            
+            // Generate test code and state
+            const testCode = 'test_code_' + Math.random().toString(36).substring(2);
+            const testState = 'test_state_' + Math.random().toString(36).substring(2);
+            
+            // Test the callback URL directly
+            const callbackUrl = `https://ratedstealth.github.io/oauth/callback?code=${testCode}&state=${testState}`;
+            
+            callbackResult.innerHTML += `
+                <p>Opening test callback URL in new tab:</p>
+                <p><a href="${callbackUrl}" target="_blank">${callbackUrl}</a></p>
+            `;
+            
+            window.open(callbackUrl, '_blank');
+        });
+    </script>
+</body>
+</html> 

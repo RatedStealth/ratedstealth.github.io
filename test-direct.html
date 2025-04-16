@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick OAuth Direct Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #00AA00; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 20px; background-color: #f9f9f9; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+        button { padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #45a049; }
+        .note { padding: 15px; background-color: #fff8e1; border-left: 4px solid #ffc107; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>Kick OAuth Direct Test</h1>
+    
+    <div class="container">
+        <h2>Minimal OAuth Configuration</h2>
+        
+        <div class="note">
+            <p><strong>APPLICATION DETAILS:</strong></p>
+            <p>Client ID: 01JRZE2B4TMTR46H93MBC012A4</p>
+            <p>Redirect URL: https://ratedstealth.github.io</p>
+            <p>Scope: channel:read:public</p>
+        </div>
+        
+        <h3>Test with unencoded URL (as specified by Kick):</h3>
+        <button onclick="directAuth(false)">Test Direct Auth (Unencoded)</button>
+        
+        <h3>Test with URL encoded parameters (standard OAuth):</h3>
+        <button onclick="directAuth(true)">Test Direct Auth (Encoded)</button>
+        
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Check URL Parameters</h2>
+        <div id="params"></div>
+        
+        <script>
+            // Check if we were redirected back with parameters
+            window.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+                const error = urlParams.get('error');
+                
+                const paramsDiv = document.getElementById('params');
+                
+                if (code) {
+                    paramsDiv.innerHTML = `
+                        <h3 style="color: green;">SUCCESS! Authorization Code Received</h3>
+                        <p>Code: ${code.substring(0, 10)}...</p>
+                        <p>State: ${state || 'None'}</p>
+                        <p>This code can be used with the manual OAuth process.</p>
+                    `;
+                } else if (error) {
+                    paramsDiv.innerHTML = `
+                        <h3 style="color: red;">ERROR: ${error}</h3>
+                        <p>Error Description: ${urlParams.get('error_description') || 'No description'}</p>
+                    `;
+                } else {
+                    paramsDiv.innerHTML = '<p>No OAuth parameters detected in URL.</p>';
+                }
+            });
+            
+            function directAuth(encoded) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '<p>Preparing OAuth request...</p>';
+                
+                const clientId = '01JRZE2B4TMTR46H93MBC012A4';
+                const redirectUri = 'https://ratedstealth.github.io/test-direct.html';
+                const scope = 'channel:read:public';
+                const state = 'direct_test_' + Math.random().toString(36).substring(2);
+                
+                let url;
+                if (encoded) {
+                    // Standard OAuth with URL encoding
+                    url = `https://kick.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}`;
+                } else {
+                    // Direct Kick format without encoding
+                    url = `https://kick.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+                }
+                
+                resultDiv.innerHTML = `
+                    <p>Opening authorization URL in new tab:</p>
+                    <pre>${url}</pre>
+                `;
+                
+                window.open(url, '_blank');
+            }
+        </script>
+    </div>
+</body>
+</html> 

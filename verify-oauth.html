@@ -12,49 +12,86 @@
         pre { background-color: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }
         .success { color: green; font-weight: bold; }
         .error { color: red; font-weight: bold; }
+        .options { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .option { flex: 1; min-width: 200px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .code { font-family: monospace; word-break: break-all; }
     </style>
 </head>
 <body>
     <h1>Verify Kick OAuth Configuration</h1>
     
     <div class="card">
-        <h2>Test Direct Authorization</h2>
-        <p>This page helps verify your Kick OAuth configuration. Click the button below to test the direct authorization flow with minimal parameters.</p>
+        <h2>Try Multiple OAuth Configurations</h2>
+        <p>Select different OAuth configurations to test which one works with your Kick Developer setup:</p>
         
-        <button class="button" id="testAuthButton">Test Kick Authorization</button>
+        <div class="options">
+            <div class="option">
+                <h3>Option 1: Root Domain</h3>
+                <p>Use the main domain as redirect URI</p>
+                <button class="button" onclick="testAuth('https://ratedstealth.github.io')">Test Option 1</button>
+            </div>
+            
+            <div class="option">
+                <h3>Option 2: With Callback Path</h3>
+                <p>Use domain with callback path</p>
+                <button class="button" onclick="testAuth('https://ratedstealth.github.io/oauth/callback')">Test Option 2</button>
+            </div>
+            
+            <div class="option">
+                <h3>Option 3: With Trailing Slash</h3>
+                <p>Use root domain with trailing slash</p>
+                <button class="button" onclick="testAuth('https://ratedstealth.github.io/')">Test Option 3</button>
+            </div>
+        </div>
+        
         <div id="status"></div>
     </div>
     
     <div class="card">
-        <h2>OAuth Configuration</h2>
-        <pre>
-Client ID: 01JRZE2B4TMTR46H93MBC012A4
-Redirect URI: https://ratedstealth.github.io
-Callback Path: N/A (using root domain)
-        </pre>
-        
-        <h3>Important Verification Steps:</h3>
+        <h2>Check Your Kick Developer Settings</h2>
+        <p>In your Kick Developer Portal, verify these settings:</p>
+        <ul>
+            <li>Client ID: <span class="code">01JRZE2B4TMTR46H93MBC012A4</span></li>
+            <li>Application Status: <strong>Active/Approved</strong></li>
+            <li>Redirect URI: Make sure it <strong>exactly</strong> matches one of the options above</li>
+            <li>Scopes: <span class="code">channel:read:public</span> must be enabled</li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>Manual OAuth URL</h2>
+        <p>If nothing works automatically, try these direct URLs in a new browser tab:</p>
         <ol>
-            <li>Make sure you're <a href="https://kick.com/login" target="_blank">logged into Kick</a> in this browser</li>
-            <li>Verify that the above Redirect URI <strong>exactly matches</strong> what's in your Kick Developer Portal</li>
-            <li>Verify that your application has the <strong>channel:read:public</strong> scope enabled</li>
-            <li>Check that your client ID is correct</li>
+            <li>
+                <div class="code">https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https%3A%2F%2Fratedstealth.github.io&response_type=code&scope=channel%3Aread%3Apublic&state=test1</div>
+                <a href="https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https%3A%2F%2Fratedstealth.github.io&response_type=code&scope=channel%3Aread%3Apublic&state=test1" target="_blank" class="button">Try Direct Link 1</a>
+            </li>
+            <li>
+                <div class="code">https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https%3A%2F%2Fratedstealth.github.io%2Foauth%2Fcallback&response_type=code&scope=channel%3Aread%3Apublic&state=test2</div>
+                <a href="https://kick.com/oauth/authorize?client_id=01JRZE2B4TMTR46H93MBC012A4&redirect_uri=https%3A%2F%2Fratedstealth.github.io%2Foauth%2Fcallback&response_type=code&scope=channel%3Aread%3Apublic&state=test2" target="_blank" class="button">Try Direct Link 2</a>
+            </li>
         </ol>
     </div>
     
     <div class="card">
-        <h2>Troubleshooting</h2>
-        <p>If authorization always redirects to Kick homepage:</p>
-        <ul>
-            <li>The most common issue is a <strong>redirect URI mismatch</strong>. Even a trailing slash can break it.</li>
-            <li>Make sure you've created an API application in Kick Developer Portal</li>
-            <li>Verify that your session with Kick is active (try logging in again)</li>
-            <li>Check that your application is approved and active in Kick</li>
-        </ul>
+        <h2>Pre-Authentication Steps</h2>
+        <p>Before attempting OAuth, make sure you:</p>
+        <ol>
+            <li><a href="https://kick.com/login" target="_blank" class="button">Log into Kick</a> in this browser</li>
+            <li>Accept any terms of service if prompted</li>
+            <li>Try using an incognito/private window after logging in</li>
+        </ol>
+    </div>
+    
+    <div class="card">
+        <h2>Debug Tool: Verify Kick API Access</h2>
+        <p>This will test if your application can access the Kick API directly:</p>
+        <button class="button" id="testApiButton">Test Kick API Connection</button>
+        <div id="apiStatus"></div>
     </div>
     
     <script>
-        document.getElementById('testAuthButton').addEventListener('click', function() {
+        function testAuth(redirectUri) {
             const status = document.getElementById('status');
             status.innerHTML = '<p>Initiating OAuth test...</p>';
             
@@ -63,26 +100,76 @@ Callback Path: N/A (using root domain)
             
             // Simple parameters for testing
             const clientId = '01JRZE2B4TMTR46H93MBC012A4';
-            const redirectUri = 'https://ratedstealth.github.io';
             const scope = 'channel:read:public';
             
             // Construct the URL
             const url = `https://kick.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&state=${state}`;
             
             status.innerHTML = `
-                <p>Redirecting to Kick in 3 seconds...</p>
-                <p>Authorization URL: <a href="${url}" target="_blank">${url}</a></p>
-                <p class="success">Click the link above if not automatically redirected.</p>
+                <div style="margin-top: 20px; padding: 15px; background-color: #f0f8ff; border-left: 4px solid #1e90ff;">
+                    <p><strong>Testing with Redirect URI:</strong> ${redirectUri}</p>
+                    <p>Authorization URL: <a href="${url}" target="_blank" class="code">${url}</a></p>
+                    <p>Opening in new tab in 2 seconds...</p>
+                </div>
             `;
             
-            // Store state for verification
-            localStorage.setItem('oauth_test_state', state);
-            localStorage.setItem('oauth_test_time', new Date().toISOString());
+            // Store test data
+            localStorage.setItem('kick_test_uri', redirectUri);
+            localStorage.setItem('kick_test_state', state);
+            localStorage.setItem('kick_test_time', new Date().toISOString());
             
-            // Redirect with a small delay to allow reading the URL
-            setTimeout(function() {
-                window.location.href = url;
-            }, 3000);
+            // Open in new tab after a short delay
+            setTimeout(() => {
+                window.open(url, '_blank');
+            }, 2000);
+        }
+        
+        // Add API test functionality
+        document.getElementById('testApiButton').addEventListener('click', function() {
+            const apiStatus = document.getElementById('apiStatus');
+            apiStatus.innerHTML = '<p>Testing API connection...</p>';
+            
+            // First, try to fetch a popular channel to test basic API access
+            const testUsername = 'shroud'; // Popular streamer - should be stable
+            
+            apiStatus.innerHTML += `<p>Testing public API with channel: ${testUsername}</p>`;
+            
+            // Create a simple fetch request through a CORS proxy
+            const apiUrl = `https://cors-anywhere.herokuapp.com/https://kick.com/api/v2/channels/${testUsername}`;
+            
+            fetch(apiUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    apiStatus.innerHTML += `<p class="success">✅ Public API is accessible (status: ${response.status})</p>`;
+                    return response.json();
+                } else {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+            })
+            .then(data => {
+                apiStatus.innerHTML += `
+                    <p class="success">✅ Channel data retrieved successfully</p>
+                    <p>Channel ID: ${data.id}</p>
+                    <p>Username: ${data.user.username}</p>
+                    <p>Live Status: ${data.livestream ? 'LIVE' : 'Offline'}</p>
+                `;
+            })
+            .catch(error => {
+                apiStatus.innerHTML += `
+                    <p class="error">❌ Error accessing Kick API: ${error.message}</p>
+                    <p>This likely indicates one of these issues:</p>
+                    <ul>
+                        <li>CORS restrictions preventing API access from GitHub Pages</li>
+                        <li>Kick API might be rate-limiting requests</li>
+                        <li>Kick API might be restricting access based on user agent or IP</li>
+                    </ul>
+                    <p>You may need to implement a server-side proxy for API access.</p>
+                `;
+            });
         });
     </script>
 </body>
