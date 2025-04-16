@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Get the query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        
+        // Redirect to the main page with the parameters
+        if (code && state) {
+            window.location.href = "../?code=" + encodeURIComponent(code) + "&state=" + encodeURIComponent(state);
+        } else {
+            // If no code or state, still redirect to main page
+            window.location.href = "../";
+        }
+    </script>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+    <p>Please wait, you are being redirected to the main page.</p>
+</body>
+</html> 
